@@ -5,12 +5,11 @@ import sys
 import dunedaqdal
 import oksdbinterfaces
 
-# Process a dal::Parameter object, placing key/value pairs in a dictionary
-def process_parameters(parameters, envDict):
-  for item in parameters:
+# Process a dal::Variable object, placing key/value pairs in a dictionary
+def process_variables(variables, envDict):
+  for item in variables:
     if item.className() == 'VariableSet':
-      for v in item.contains:
-        envDict[v.name] = v.value
+      process_variables(item.contains, envDict)
     else:
       if item.className() == 'Variable':
         envDict[item.name] = item.value
@@ -35,9 +34,9 @@ def process_segment(db, session, segment, controller=None):
       print(f"Controller: {controller_id}, App: {app}")
       appenv = {}
       # Get default environment from Session
-      process_parameters(session.environment, appenv)
+      process_variables(session.environment, appenv)
       # Override with any app specific environment from Application
-      process_parameters(app.applicationEnvironment, appenv)
+      process_variables(app.applicationEnvironment, appenv)
       print(f"Application environment={appenv}")
     else:
       print(f"Ignoring disabled app {app.id}")
@@ -54,7 +53,7 @@ def main():
   #  app = db.get_dal(apploc.class_name, apploc.id)
 
   environment = {}
-  process_parameters(session.environment, environment)
+  process_variables(session.environment, environment)
   print(f"Session environment={environment}")
 
   for seg in session.segments:
