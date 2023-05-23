@@ -10,10 +10,10 @@
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
 
-#include "dunedaqdal/Application.hpp"
-#include "dunedaqdal/DaqApplication.hpp"
-#include "dunedaqdal/HostResource.hpp"
-#include "dunedaqdal/Session.hpp"
+#include "coredal/Application.hpp"
+#include "coredal/DaqApplication.hpp"
+#include "coredal/HostResource.hpp"
+#include "coredal/Session.hpp"
 
 
 #include <sstream>
@@ -21,7 +21,7 @@
 namespace py = pybind11;
 using namespace dunedaq::oksdbinterfaces;
 
-namespace dunedaq::dal::python {
+namespace dunedaq::coredal::python {
 
   struct ObjectLocator {
     ObjectLocator(const std::string& id_arg, const std::string& class_name_arg) :
@@ -57,8 +57,8 @@ namespace dunedaq::dal::python {
   }
 
   bool component_disabled(const Configuration& db, const std::string& session_id, const std::string& component_id) {
-    const dunedaq::dal::Component* component_ptr = const_cast<Configuration&>(db).get<dunedaq::dal::Component>(component_id);
-    const dunedaq::dal::Session* session_ptr = const_cast<Configuration&>(db).get<dunedaq::dal::Session>(session_id);
+    const dunedaq::coredal::Component* component_ptr = const_cast<Configuration&>(db).get<dunedaq::coredal::Component>(component_id);
+    const dunedaq::coredal::Session* session_ptr = const_cast<Configuration&>(db).get<dunedaq::coredal::Session>(session_id);
 
     return component_ptr->disabled(*session_ptr);
   }
@@ -67,10 +67,10 @@ namespace dunedaq::dal::python {
   std::vector<std::vector<ObjectLocator>> component_get_parents(const Configuration& db,
                                                                 const std::string& session_id,
                                                                 const std::string& component_id) {
-    const dunedaq::dal::Component* component_ptr = const_cast<Configuration&>(db).get<dunedaq::dal::Component>(component_id);
-    const dunedaq::dal::Session* session_ptr = const_cast<Configuration&>(db).get<dunedaq::dal::Session>(session_id);
+    const dunedaq::coredal::Component* component_ptr = const_cast<Configuration&>(db).get<dunedaq::coredal::Component>(component_id);
+    const dunedaq::coredal::Session* session_ptr = const_cast<Configuration&>(db).get<dunedaq::coredal::Session>(session_id);
 
-    std::list<std::vector<const dunedaq::dal::Component*>> parents;
+    std::list<std::vector<const dunedaq::coredal::Component*>> parents;
     std::vector<std::vector<ObjectLocator>> parent_ids;
 
     component_ptr->get_parents(*session_ptr, parents);
@@ -88,7 +88,7 @@ namespace dunedaq::dal::python {
   }
 
   std::vector<std::string> daq_application_get_used_hostresources(const Configuration& db, const std::string& app_id) {
-    auto app = const_cast<Configuration&>(db).get<dunedaq::dal::DaqApplication>(app_id);
+    auto app = const_cast<Configuration&>(db).get<dunedaq::coredal::DaqApplication>(app_id);
     std::vector<std::string> resources;
     for (auto res : app->get_used_hostresources()) {
       resources.push_back(res->UID());
@@ -112,4 +112,4 @@ register_dal_methods(py::module& m)
   m.def("daqapp_get_used_resources", &daq_application_get_used_hostresources, "Get list of HostResources used by DAQApplication");
 }
 
-} // namespace dunedaq::dunedaqdal::python
+} // namespace dunedaq::coredal::python

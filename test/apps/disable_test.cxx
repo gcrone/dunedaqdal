@@ -2,24 +2,24 @@
 
 #include "oksdbinterfaces/Configuration.hpp"
 
-#include "dunedaqdal/Component.hpp"
-#include "dunedaqdal/DaqApplication.hpp"
-#include "dunedaqdal/DaqModule.hpp"
-#include "dunedaqdal/Session.hpp"
+#include "coredal/Component.hpp"
+#include "coredal/DaqApplication.hpp"
+#include "coredal/DaqModule.hpp"
+#include "coredal/Session.hpp"
 
 #include <iostream>
 #include <string>
 
 using namespace dunedaq;
 
-void listApps(const dal::Session* session) {
+void listApps(const coredal::Session* session) {
   for (auto app : session->get_all_applications()) {
     std::cout << "Application: " << app->UID();
     if (app->disabled(*session)) {
       std::cout << "<disabled>";
     }
     else {
-      auto daqApp = app->cast<dal::DaqApplication>();
+      auto daqApp = app->cast<coredal::DaqApplication>();
       if (daqApp) {
         std::cout << " Modules:";
         for (auto mod : daqApp->get_contains()) {
@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
   auto confdb = new oksdbinterfaces::Configuration(confimpl);
 
   std::string sessionName(argv[1]);
-  auto session = confdb->get<dal::Session>(sessionName);
+  auto session = confdb->get<coredal::Session>(sessionName);
 
   auto disabled = session->get_disabled();
   std::cout << "Currently " << disabled.size() << " items disabled: ";
@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
   listApps(session);
 
   std::cout << "======\nNow trying to set enabled  \n";
-  std::set<const dal::Component*> enable;
+  std::set<const coredal::Component*> enable;
   for (auto item : disabled) {
     enable.insert(item);
   }

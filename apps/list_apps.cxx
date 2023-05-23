@@ -2,11 +2,11 @@
 
 #include "oksdbinterfaces/Configuration.hpp"
 
-#include "dunedaqdal/Component.hpp"
-#include "dunedaqdal/DaqApplication.hpp"
-#include "dunedaqdal/DaqModule.hpp"
-#include "dunedaqdal/Segment.hpp"
-#include "dunedaqdal/Session.hpp"
+#include "coredal/Component.hpp"
+#include "coredal/DaqApplication.hpp"
+#include "coredal/DaqModule.hpp"
+#include "coredal/Segment.hpp"
+#include "coredal/Session.hpp"
 
 #include <iostream>
 #include <string>
@@ -24,14 +24,14 @@ int main(int argc, char* argv[]) {
   auto confdb = new oksdbinterfaces::Configuration(confimpl);
 
   std::string sessionName(argv[1]);
-  auto session = confdb->get<dal::Session>(sessionName);
+  auto session = confdb->get<coredal::Session>(sessionName);
   for (auto app : session->get_all_applications()) {
     std::cout << "Application: " << app->UID();
     if (app->disabled(*session)) {
       std::cout << "<disabled>";
     }
     else {
-      auto daqApp = app->cast<dal::DaqApplication>();
+      auto daqApp = app->cast<coredal::DaqApplication>();
       if (daqApp) {
         std::cout << " Modules:";
         for (auto mod : daqApp->get_contains()) {

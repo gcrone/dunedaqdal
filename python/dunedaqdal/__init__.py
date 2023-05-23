@@ -1,1 +1,1 @@
-from ._daq_dunedaqdal_py import *
+from ._daq_coredal_py import *

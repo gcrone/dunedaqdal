@@ -92,10 +92,10 @@
 
  <class name="Component" description="Abstract base class for Segment and Resource classes. It is only used to allow objects of derived classes to be put into list of disabled items. For more information read https://twiki.cern.ch/twiki/bin/viewauth/Atlas/DaqHltDal#3_4_Resource_Classes" is-abstract="yes">
   <method name="get_parents" description="The algorithm calculates a vector of segments which are parents of given segment.&#xA;If the segment has parents referenced by the partition object, then:&#xA;- in case of C++ it fills the parents parameter; otherwise it throws {@link NotFoundException} exception">
-   <method-implementation language="c++" prototype="void get_parents(const dunedaq::dal::Session&amp; session, std::list&lt; std::vector&lt;const dunedaq::dal::Component *&gt; &gt;&amp; parents) const" body=""/>
+   <method-implementation language="c++" prototype="void get_parents(const dunedaq::coredal::Session&amp; session, std::list&lt; std::vector&lt;const dunedaq::coredal::Component *&gt; &gt;&amp; parents) const" body=""/>
   </method>
   <method name="disabled" description="The algorithm checks if the segment / resource is disabled in the partition that uses it.&#xA;@param partition      partition object containing this resource or segment&#xA;">
-   <method-implementation language="c++" prototype="bool disabled(const dunedaq::dal::Session&amp; session, bool skip_check = false) const" body=""/>
+   <method-implementation language="c++" prototype="bool disabled(const dunedaq::coredal::Session&amp; session, bool skip_check = false) const" body=""/>
   </method>
   <method name="why_disabled" description="">
    <method-implementation language="java" prototype="String why_disabled(Partition partition, String prefix, boolean full_report) throws config.GenericException, config.SystemException, config.NotFoundException, config.NotValidException" body="return partition.resources().why_disabled(this, prefix, full_report);"/>
@@ -112,7 +112,7 @@
   <attribute name="port" description="Port for REST configuration interface" type="u16" is-not-null="yes"/>
   <attribute name="application_name" description="Name of the application binary to run." type="string" init-value="daq_application" is-not-null="yes"/>
   <method name="get_used_hostresources" description="Get the set of all HostResources used by this application">
-   <method-implementation language="c++" prototype=" std::set&lt;const dunedaq::dal::HostResource*&gt; get_used_hostresources() const" body=""/>
+   <method-implementation language="c++" prototype=" std::set&lt;const dunedaq::coredal::HostResource*&gt; get_used_hostresources() const" body=""/>
   </method>
  </class>
 
@@ -219,13 +219,13 @@
   <relationship name="disabled" description="Resources that should not participate in the current run" class-type="Component" low-cc="zero" high-cc="many" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
   <relationship name="segments" description="List of configuration Segments that form this Session" class-type="Segment" low-cc="zero" high-cc="many" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
   <method name="get_all_applications" description="Returns applications defined in the Session and all of its Segments.">
-   <method-implementation language="c++" prototype="std::vector&lt;const dunedaq::dal::Application *&gt; get_all_applications() const" body=""/>
+   <method-implementation language="c++" prototype="std::vector&lt;const dunedaq::coredal::Application *&gt; get_all_applications() const" body=""/>
   </method>
   <method name="set_disabled" description="In addition to persistently disabled components, dynamically disable these components. It will be taken into account by disabled() algorithm of Component class. This information is not committed to the database and will be overwritten by next set_disabled() call or erased by any config action (DB load, unload, reload).">
-   <method-implementation language="c++" prototype="void set_disabled(const std::set&lt;const dunedaq::dal::Component *&gt;&amp; objs) const" body="BEGIN_PRIVATE_SECTION&#xA;friend class DisabledComponents;&#xA;friend class Component;&#xA;mutable dunedaq::dal::DisabledComponents m_disabled_components; &#xA;END_PRIVATE_SECTION&#xA;BEGIN_MEMBER_INITIALIZER_LIST&#xA;m_disabled_components(p_db,this)&#xA;END_MEMBER_INITIALIZER_LIST&#xA;BEGIN_HEADER_PROLOGUE&#xA;#include &quot;dunedaqdal/disabled-components.hpp&quot;&#xA;END_HEADER_PROLOGUE"/>
+   <method-implementation language="c++" prototype="void set_disabled(const std::set&lt;const dunedaq::coredal::Component *&gt;&amp; objs) const" body="BEGIN_PRIVATE_SECTION&#xA;friend class DisabledComponents;&#xA;friend class Component;&#xA;mutable dunedaq::coredal::DisabledComponents m_disabled_components; &#xA;END_PRIVATE_SECTION&#xA;BEGIN_MEMBER_INITIALIZER_LIST&#xA;m_disabled_components(p_db,this)&#xA;END_MEMBER_INITIALIZER_LIST&#xA;BEGIN_HEADER_PROLOGUE&#xA;#include &quot;coredal/disabled-components.hpp&quot;&#xA;END_HEADER_PROLOGUE"/>
   </method>
   <method name="set_enabled" description="Dynamically enable these persistently disabled components. It will be taken into account by disabled() algorithm of the Component class. This information is not committed to the database and will be overwritten by next set_enabled() call or erased by any config action (DB load, unload, reload).">
-   <method-implementation language="c++" prototype="void set_enabled(const std::set&lt;const dunedaq::dal::Component *&gt;&amp; objs) const" body=""/>
+   <method-implementation language="c++" prototype="void set_enabled(const std::set&lt;const dunedaq::coredal::Component *&gt;&amp; objs) const" body=""/>
   </method>
  </class>
 

@@ -2,7 +2,7 @@
 #define _daq_core_test_circular_dependency_H_
 
 
-#include "dunedaqdal/util.hpp"
+#include "coredal/util.hpp"
 
 namespace dunedaq {
   namespace oksdbinterfaces {
@@ -10,7 +10,7 @@ namespace dunedaq {
   }
 }
 
-namespace dunedaq::dal {
+namespace dunedaq::coredal {
 
     class TestCircularDependency {
 
@@ -27,7 +27,7 @@ namespace dunedaq::dal {
 
       private:
 
-        /// \throw dunedaq::dal::FoundCircularDependency
+        /// \throw dunedaq::coredal::FoundCircularDependency
         void push(const dunedaq::oksdbinterfaces::DalObject * object);
 
         void
@@ -59,7 +59,7 @@ namespace dunedaq::dal {
 
         TestCircularDependency& p_fuse;
     };
-} // dunedaq::dal
+} // dunedaq::coredal
 
 
 #endif

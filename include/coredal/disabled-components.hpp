@@ -7,9 +7,9 @@
 #include "oksdbinterfaces/Configuration.hpp"
 #include "oksdbinterfaces/ConfigAction.hpp"
 
-#include "dunedaqdal/Component.hpp"
+#include "coredal/Component.hpp"
 
-namespace dunedaq::dal {
+namespace dunedaq::coredal {
 
     class Session;
     class ResourceSet;
@@ -39,8 +39,8 @@ namespace dunedaq::dal {
       unsigned long m_num_of_slr_disabled_resources;
 
       std::set<const std::string *, SortStringPtr> m_disabled;
-      std::set<const dunedaq::dal::Component *> m_user_disabled;
-      std::set<const dunedaq::dal::Component *> m_user_enabled;
+      std::set<const dunedaq::coredal::Component *> m_user_disabled;
+      std::set<const dunedaq::coredal::Component *> m_user_enabled;
 
       void
       __clear() noexcept
@@ -81,30 +81,30 @@ namespace dunedaq::dal {
       }
 
       void
-      disable(const dunedaq::dal::Component& c)
+      disable(const dunedaq::coredal::Component& c)
       {
         m_disabled.insert(&c.UID());
       }
 
       bool
-      is_enabled(const dunedaq::dal::Component* c);
+      is_enabled(const dunedaq::coredal::Component* c);
 
       bool
-      is_enabled_short(const dunedaq::dal::Component* c)
+      is_enabled_short(const dunedaq::coredal::Component* c)
       {
         return (m_disabled.find(&c->UID()) == m_disabled.end());
       }
 
       void
-      disable_children(const dunedaq::dal::ResourceSet&);
+      disable_children(const dunedaq::coredal::ResourceSet&);
 
       void
-      disable_children(const dunedaq::dal::Segment&);
+      disable_children(const dunedaq::coredal::Segment&);
 
       static unsigned long
-      get_num_of_slr_resources(const dunedaq::dal::Session& p);
+      get_num_of_slr_resources(const dunedaq::coredal::Session& p);
 
     };
-} // namespace dunedaq::dal
+} // namespace dunedaq::coredal
 
 #endif // DUNEDAQDAL_DISABLED_COMPONENTS_H

@@ -8,7 +8,7 @@
 # https://dune-daq-sw.readthedocs.io/en/latest/packages/daq-cmake/
 
 cmake_minimum_required(VERSION 3.12)
-project(dunedaqdal VERSION 0.0.0)
+project(coredal VERSION 0.0.0)
 
 find_package(daq-cmake REQUIRED)
 
@@ -26,7 +26,7 @@ find_package(oksdbinterfaces REQUIRED)
 ##############################################################################
 
 daq_generate_dal(dunedaq.schema.xml
-  NAMESPACE dunedaq::dal
+  NAMESPACE dunedaq::coredal
   INCLUDE ${CMAKE_CODEGEN_BINARY_DIR}/include/${PROJECT_NAME}
   CPP ${CMAKE_CODEGEN_BINARY_DIR}/src
   CPP_OUTPUT  dal_cpp_srcs
@@ -40,10 +40,10 @@ daq_add_library(${dal_cpp_srcs} dalMethods.cpp
 
 
 daq_add_application(listApps list_apps.cxx
-  LINK_LIBRARIES dunedaqdal oksdbinterfaces::oksdbinterfaces)
+  LINK_LIBRARIES coredal oksdbinterfaces::oksdbinterfaces)
 
 daq_add_application(disable_test disable_test.cxx TEST
-  LINK_LIBRARIES dunedaqdal oksdbinterfaces::oksdbinterfaces logging::logging)
+  LINK_LIBRARIES coredal oksdbinterfaces::oksdbinterfaces logging::logging)
 ##############################################################################
 
 
@@ -51,7 +51,7 @@ daq_add_application(disable_test disable_test.cxx TEST
 
 
 #daq_add_python_bindings(*.cpp LINK_LIBRARIES ${PROJECT_NAME} ) # Any additional libraries to link in beyond the main library not yet determined
-daq_add_python_bindings(*.cpp LINK_LIBRARIES dunedaqdal)
+daq_add_python_bindings(*.cpp LINK_LIBRARIES coredal)
 
 
 ##############################################################################

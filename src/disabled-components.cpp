@@ -1,11 +1,11 @@
-#include "dunedaqdal/Application.hpp"
-#include "dunedaqdal/ResourceSet.hpp"
-#include "dunedaqdal/ResourceSetAND.hpp"
-#include "dunedaqdal/ResourceSetOR.hpp"
-#include "dunedaqdal/Segment.hpp"
-#include "dunedaqdal/Session.hpp"
-#include "dunedaqdal/util.hpp"
-#include "dunedaqdal/disabled-components.hpp"
+#include "coredal/Application.hpp"
+#include "coredal/ResourceSet.hpp"
+#include "coredal/ResourceSetAND.hpp"
+#include "coredal/ResourceSetOR.hpp"
+#include "coredal/Segment.hpp"
+#include "coredal/Session.hpp"
+#include "coredal/util.hpp"
+#include "coredal/disabled-components.hpp"
 
 #include "logging/Logging.hpp"
 
@@ -13,7 +13,7 @@
 
 using namespace dunedaq::oksdbinterfaces;
 
-dunedaq::dal::DisabledComponents::DisabledComponents(Configuration& db,
+dunedaq::coredal::DisabledComponents::DisabledComponents(Configuration& db,
  Session* session) :
   m_db(db),
   m_session(session),
@@ -24,51 +24,51 @@ dunedaq::dal::DisabledComponents::DisabledComponents(Configuration& db,
   m_db.add_action(this);
 }
 
-dunedaq::dal::DisabledComponents::~DisabledComponents()
+dunedaq::coredal::DisabledComponents::~DisabledComponents()
 {
   TLOG_DEBUG(2) <<  "destroy the object " << (void *)this ;
   m_db.remove_action(this);
 }
 
 void
-dunedaq::dal::DisabledComponents::notify(std::vector<ConfigurationChange *>& /*changes*/) noexcept
+dunedaq::coredal::DisabledComponents::notify(std::vector<ConfigurationChange *>& /*changes*/) noexcept
 {
   TLOG_DEBUG(2) <<  "reset session components because of notification callback on object " << (void *)this ;
   __clear();
 }
 
 void
-dunedaq::dal::DisabledComponents::load() noexcept
+dunedaq::coredal::DisabledComponents::load() noexcept
 {
   TLOG_DEBUG(2) <<  "reset session components because of configuration load on object " << (void *)this ;
   __clear();
 }
 
 void
-dunedaq::dal::DisabledComponents::unload() noexcept
+dunedaq::coredal::DisabledComponents::unload() noexcept
 {
   TLOG_DEBUG(2) <<  "reset session components because of configuration unload on object " << (void *)this ;
   __clear();
 }
 
 void
-dunedaq::dal::DisabledComponents::update(const ConfigObject& obj, const std::string& name) noexcept
+dunedaq::coredal::DisabledComponents::update(const ConfigObject& obj, const std::string& name) noexcept
 {
   TLOG_DEBUG(2) <<  "reset session components because of configuration update (obj = " << obj << ", name = \'" << name << "\') on object " << (void *)this ;
   __clear();
 }
 
 void
-dunedaq::dal::DisabledComponents::reset() noexcept
+dunedaq::coredal::DisabledComponents::reset() noexcept
 {
   TLOG_DEBUG(2) <<  "reset disabled by explicit user call" ;
   m_disabled.clear(); // do not clear s_user_disabled && s_user_enabled !!!
 }
 
 bool
-dunedaq::dal::DisabledComponents::is_enabled(const dunedaq::dal::Component * c)
+dunedaq::coredal::DisabledComponents::is_enabled(const dunedaq::coredal::Component * c)
 {
-  if (const dunedaq::dal::Segment * seg = c->cast<dunedaq::dal::Segment>()) {
+  if (const dunedaq::coredal::Segment * seg = c->cast<dunedaq::coredal::Segment>()) {
     return !seg->disabled(*m_session);
   }
 
@@ -79,21 +79,21 @@ dunedaq::dal::DisabledComponents::is_enabled(const dunedaq::dal::Component * c)
 
 
 void
-dunedaq::dal::DisabledComponents::disable_children(const dunedaq::dal::ResourceSet& rs)
+dunedaq::coredal::DisabledComponents::disable_children(const dunedaq::coredal::ResourceSet& rs)
 {
   for (auto & res : rs.get_contains()) {
     disable(*res);
-    if (const auto * rs2 = res->cast<dunedaq::dal::ResourceSet>()) {
+    if (const auto * rs2 = res->cast<dunedaq::coredal::ResourceSet>()) {
       disable_children(*rs2);
     }
   }
 }
 
 void
-dunedaq::dal::DisabledComponents::disable_children(const dunedaq::dal::Segment& segment)
+dunedaq::coredal::DisabledComponents::disable_children(const dunedaq::coredal::Segment& segment)
 {
   for (auto & res : segment.get_resources()) {
-    if (const auto * rs = res->cast<dunedaq::dal::ResourceSet>()) {
+    if (const auto * rs = res->cast<dunedaq::coredal::ResourceSet>()) {
       disable_children(*rs);
     }
   }
@@ -105,7 +105,7 @@ dunedaq::dal::DisabledComponents::disable_children(const dunedaq::dal::Segment& 
 }
 
 void
-dunedaq::dal::Session::set_disabled(const std::set<const dunedaq::dal::Component *>& objs) const
+dunedaq::coredal::Session::set_disabled(const std::set<const dunedaq::coredal::Component *>& objs) const
 {
   m_disabled_components.m_user_disabled.clear();
 
@@ -118,7 +118,7 @@ dunedaq::dal::Session::set_disabled(const std::set<const dunedaq::dal::Component
 }
 
 void
-dunedaq::dal::Session::set_enabled(const std::set<const dunedaq::dal::Component *>& objs) const
+dunedaq::coredal::Session::set_enabled(const std::set<const dunedaq::coredal::Component *>& objs) const
 {
   m_disabled_components.m_user_enabled.clear();
 
@@ -133,7 +133,7 @@ dunedaq::dal::Session::set_enabled(const std::set<const dunedaq::dal::Component 
 
 namespace dunedaq {
   ERS_DECLARE_ISSUE_BASE(
-    dal,
+    coredal,
     ReadMaxAllowedIterations,
     AlgorithmError,
     "Has exceeded the maximum of iterations allowed (" << limit << ") during calculation of disabled objects",
@@ -147,25 +147,25 @@ namespace dunedaq {
   // fill data from resource sets
 
 static void fill(
-  const dunedaq::dal::ResourceSet& rs,
-  std::vector<const dunedaq::dal::ResourceSetOR *>& rs_or,
-  std::vector<const dunedaq::dal::ResourceSetAND *>& rs_and,
-  dunedaq::dal::TestCircularDependency& cd_fuse
+  const dunedaq::coredal::ResourceSet& rs,
+  std::vector<const dunedaq::coredal::ResourceSetOR *>& rs_or,
+  std::vector<const dunedaq::coredal::ResourceSetAND *>& rs_and,
+  dunedaq::coredal::TestCircularDependency& cd_fuse
 )
 {
-  if (const dunedaq::dal::ResourceSetAND * r1 = rs.cast<dunedaq::dal::ResourceSetAND>())
+  if (const dunedaq::coredal::ResourceSetAND * r1 = rs.cast<dunedaq::coredal::ResourceSetAND>())
     {
       rs_and.push_back(r1);
     }
-  else if (const dunedaq::dal::ResourceSetOR * r2 = rs.cast<dunedaq::dal::ResourceSetOR>())
+  else if (const dunedaq::coredal::ResourceSetOR * r2 = rs.cast<dunedaq::coredal::ResourceSetOR>())
     {
       rs_or.push_back(r2);
     }
 
   for (auto & i : rs.get_contains())
     {
-      dunedaq::dal::AddTestOnCircularDependency add_fuse_test(cd_fuse, i);
-      if (const dunedaq::dal::ResourceSet * rs2 = i->cast<dunedaq::dal::ResourceSet>())
+      dunedaq::coredal::AddTestOnCircularDependency add_fuse_test(cd_fuse, i);
+      if (const dunedaq::coredal::ResourceSet * rs2 = i->cast<dunedaq::coredal::ResourceSet>())
         {
           fill(*rs2, rs_or, rs_and, cd_fuse);
         }
@@ -176,27 +176,27 @@ static void fill(
   // fill data from segments
 
 static void fill(
-  const dunedaq::dal::Segment& s,
-  std::vector<const dunedaq::dal::ResourceSetOR *>& rs_or,
-  std::vector<const dunedaq::dal::ResourceSetAND *>& rs_and,
-  dunedaq::dal::TestCircularDependency& cd_fuse
+  const dunedaq::coredal::Segment& s,
+  std::vector<const dunedaq::coredal::ResourceSetOR *>& rs_or,
+  std::vector<const dunedaq::coredal::ResourceSetAND *>& rs_and,
+  dunedaq::coredal::TestCircularDependency& cd_fuse
 )
 {
   for (auto & app : s.get_applications()) {
-    dunedaq::dal::AddTestOnCircularDependency add_fuse_test(cd_fuse, app);
-    if (const dunedaq::dal::ResourceSet * rs = app->cast<dunedaq::dal::ResourceSet>()) {
+    dunedaq::coredal::AddTestOnCircularDependency add_fuse_test(cd_fuse, app);
+    if (const dunedaq::coredal::ResourceSet * rs = app->cast<dunedaq::coredal::ResourceSet>()) {
       fill(*rs, rs_or, rs_and, cd_fuse);
     }
   }
   for (auto & res : s.get_resources()) {
-    dunedaq::dal::AddTestOnCircularDependency add_fuse_test(cd_fuse, res);
-    if (const dunedaq::dal::ResourceSet * rs = res->cast<dunedaq::dal::ResourceSet>()) {
+    dunedaq::coredal::AddTestOnCircularDependency add_fuse_test(cd_fuse, res);
+    if (const dunedaq::coredal::ResourceSet * rs = res->cast<dunedaq::coredal::ResourceSet>()) {
       fill(*rs, rs_or, rs_and, cd_fuse);
     }
   }
 
   for (auto & seg : s.get_segments()) {
-    dunedaq::dal::AddTestOnCircularDependency add_fuse_test(cd_fuse, seg);
+    dunedaq::coredal::AddTestOnCircularDependency add_fuse_test(cd_fuse, seg);
     fill(*seg, rs_or, rs_and, cd_fuse);
   }
 }
@@ -205,22 +205,22 @@ static void fill(
   // fill data from session
 
 static void fill(
-  const dunedaq::dal::Session& session,
-  std::vector<const dunedaq::dal::ResourceSetOR *>& rs_or,
-  std::vector<const dunedaq::dal::ResourceSetAND *>& rs_and,
-  dunedaq::dal::TestCircularDependency& cd_fuse
+  const dunedaq::coredal::Session& session,
+  std::vector<const dunedaq::coredal::ResourceSetOR *>& rs_or,
+  std::vector<const dunedaq::coredal::ResourceSetAND *>& rs_and,
+  dunedaq::coredal::TestCircularDependency& cd_fuse
 )
 {
 #if 0
-  if (const dunedaq::dal::OnlineSegment * onlseg = p.get_OnlineInfrastructure())
+  if (const dunedaq::coredal::OnlineSegment * onlseg = p.get_OnlineInfrastructure())
     {
-      dunedaq::dal::AddTestOnCircularDependency add_fuse_test(cd_fuse, onlseg);
+      dunedaq::coredal::AddTestOnCircularDependency add_fuse_test(cd_fuse, onlseg);
       fill(*onlseg, rs_or, rs_and, cd_fuse);
 
       // NOTE: normally application may not be ResourceSet, but for some "exotic" cases put this code
       for (auto &a : p.get_OnlineInfrastructureApplications())
         {
-          if (const dunedaq::dal::ResourceSet * rs = a->cast<dunedaq::dal::ResourceSet>())
+          if (const dunedaq::coredal::ResourceSet * rs = a->cast<dunedaq::coredal::ResourceSet>())
             {
               fill(*rs, rs_or, rs_and, cd_fuse);
             }
@@ -230,7 +230,7 @@ static void fill(
 
   for (auto & i : session.get_segments())
     {
-      dunedaq::dal::AddTestOnCircularDependency add_fuse_test(cd_fuse, i);
+      dunedaq::coredal::AddTestOnCircularDependency add_fuse_test(cd_fuse, i);
       fill(*i, rs_or, rs_and, cd_fuse);
     }
 }
@@ -238,7 +238,7 @@ static void fill(
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 bool
-dunedaq::dal::Component::disabled(const dunedaq::dal::Session& session, bool skip_check) const
+dunedaq::coredal::Component::disabled(const dunedaq::coredal::Session& session, bool skip_check) const
 {
   TLOG_DEBUG( 6) << "Session UID: " << session.UID();
   // fill disabled (e.g. after session changes)
@@ -252,14 +252,14 @@ dunedaq::dal::Component::disabled(const dunedaq::dal::Session& session, bool ski
     else {
       // get two lists of all session's resource-set-or and resource-set-and
       // also test any circular dependencies between segments and resource sets
-      dunedaq::dal::TestCircularDependency cd_fuse("component \'is-disabled\' status", &session);
-      std::vector<const dunedaq::dal::ResourceSetOR *> rs_or;
-      std::vector<const dunedaq::dal::ResourceSetAND *> rs_and;
+      dunedaq::coredal::TestCircularDependency cd_fuse("component \'is-disabled\' status", &session);
+      std::vector<const dunedaq::coredal::ResourceSetOR *> rs_or;
+      std::vector<const dunedaq::coredal::ResourceSetAND *> rs_and;
       fill(session, rs_or, rs_and, cd_fuse);
 
       // calculate explicitly and implicitly (nested) disabled components
       {
-        std::vector<const dunedaq::dal::Component *> vector_of_disabled;
+        std::vector<const dunedaq::coredal::Component *> vector_of_disabled;
         vector_of_disabled.reserve(session.get_disabled().size() + session.m_disabled_components.m_user_disabled.size());
 
         // add user disabled components, if any
@@ -285,10 +285,10 @@ dunedaq::dal::Component::disabled(const dunedaq::dal::Session& session, bool ski
         for (auto & i : vector_of_disabled) {
           session.m_disabled_components.disable(*i);
 
-          if (const dunedaq::dal::ResourceSet * rs = i->cast<dunedaq::dal::ResourceSet>()) {
+          if (const dunedaq::coredal::ResourceSet * rs = i->cast<dunedaq::coredal::ResourceSet>()) {
             session.m_disabled_components.disable_children(*rs);
           }
-          else if (const dunedaq::dal::Segment * seg = i->cast<dunedaq::dal::Segment>()) {
+          else if (const dunedaq::coredal::Segment * seg = i->cast<dunedaq::coredal::Segment>()) {
             session.m_disabled_components.disable_children(*seg);
           }
         }
@@ -318,7 +318,7 @@ dunedaq::dal::Component::disabled(const dunedaq::dal::Session& session, bool ski
         TLOG_DEBUG(6) <<  "Session has " << rs_and.size() << " resourceSetANDs";
         for (const auto& j : rs_and) {
           if (session.m_disabled_components.is_enabled_short(j)) {
-            const std::vector<const dunedaq::dal::ResourceBase*> &resources = j->get_contains();
+            const std::vector<const dunedaq::coredal::ResourceBase*> &resources = j->get_contains();
             TLOG_DEBUG(6) << "Checking " << resources.size() << " ResourceSetAND resources";
             if (!resources.empty()) {
               // check ANY child is enabled
@@ -346,7 +346,7 @@ dunedaq::dal::Component::disabled(const dunedaq::dal::Session& session, bool ski
 
         unsigned int iLimit(1000);
         if (count > iLimit) {
-          ers::error(dunedaq::dal::ReadMaxAllowedIterations(ERS_HERE, iLimit));
+          ers::error(dunedaq::coredal::ReadMaxAllowedIterations(ERS_HERE, iLimit));
           break;
         }
       }
@@ -359,7 +359,7 @@ dunedaq::dal::Component::disabled(const dunedaq::dal::Session& session, bool ski
 }
 
 unsigned long
-dunedaq::dal::DisabledComponents::get_num_of_slr_resources(const dunedaq::dal::Session& session)
+dunedaq::coredal::DisabledComponents::get_num_of_slr_resources(const dunedaq::coredal::Session& session)
 {
   return (session.m_disabled_components.m_num_of_slr_enabled_resources + session.m_disabled_components.m_num_of_slr_disabled_resources);
 }

@@ -3,7 +3,7 @@
 #include "test_circular_dependency.hpp"
 
 void
-dunedaq::dal::TestCircularDependency::push(const dunedaq::oksdbinterfaces::DalObject * object)
+dunedaq::coredal::TestCircularDependency::push(const dunedaq::oksdbinterfaces::DalObject * object)
 {
   if(p_index < p_limit) {
     p_objects[p_index++] = object;
@@ -15,6 +15,6 @@ dunedaq::dal::TestCircularDependency::push(const dunedaq::oksdbinterfaces::DalOb
       s << p_objects[i];
     }
 
-    throw dunedaq::dal::FoundCircularDependency(ERS_HERE, p_limit, p_goal, s.str());
+    throw dunedaq::coredal::FoundCircularDependency(ERS_HERE, p_limit, p_goal, s.str());
   }
 }
