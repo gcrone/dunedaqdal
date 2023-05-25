@@ -25,18 +25,12 @@ find_package(oksdbinterfaces REQUIRED)
 
 ##############################################################################
 
-daq_generate_dal(dunedaq.schema.xml
-  NAMESPACE dunedaq::coredal
-  INCLUDE ${CMAKE_CODEGEN_BINARY_DIR}/include/${PROJECT_NAME}
-  CPP ${CMAKE_CODEGEN_BINARY_DIR}/src
-  CPP_OUTPUT  dal_cpp_srcs
-  DUMP_OUTPUT cpp_dump_src)
+daq_generate_dal(dunedaq.schema.xml NAMESPACE dunedaq::coredal)
 
-daq_add_library(${dal_cpp_srcs} dalMethods.cpp
+daq_add_library(dalMethods.cpp
   test_circular_dependency.cpp disabled-components.cpp
-  DAL
   LINK_LIBRARIES oksdbinterfaces::oksdbinterfaces okssystem::okssystem
-  logging::logging)
+  logging::logging coredal_oks)
 
 
 daq_add_application(listApps list_apps.cxx
