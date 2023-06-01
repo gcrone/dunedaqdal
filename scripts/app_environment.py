@@ -2,7 +2,7 @@
 
 import sys
 
-import dunedaqdal
+import coredal
 import oksdbinterfaces
 
 # Process a dal::Variable object, placing key/value pairs in a dictionary
@@ -30,7 +30,7 @@ def process_segment(db, session, segment, controller=None):
   # Get all the enabled applications of this segment
   for app in segment.applications:
     print()
-    if not dunedaqdal.component_disabled(db._obj, session.id, app.id):
+    if not coredal.component_disabled(db._obj, session.id, app.id):
       print(f"Controller: {controller_id}, App: {app}")
       appenv = {}
       # Get default environment from Session
@@ -48,7 +48,7 @@ def main():
   db = oksdbinterfaces.Configuration("oksconfig:" + sys.argv[1])
   session_name = sys.argv[2]
   session = db.get_dal(class_name="Session", uid=session_name)
-  #apps = dunedaqdal.session_get_all_applications(db._obj, session_name)
+  #apps = coredal.session_get_all_applications(db._obj, session_name)
   #for apploc in apps:
   #  app = db.get_dal(apploc.class_name, apploc.id)
 
@@ -56,8 +56,7 @@ def main():
   process_variables(session.environment, environment)
   print(f"Session environment={environment}")
 
-  for seg in session.segments:
-    process_segment(db, session, seg)
+  process_segment(db, session, session.segment)
 
 if __name__ == '__main__':
     main()

@@ -45,7 +45,7 @@ daq_add_application(disable_test disable_test.cxx TEST
 
 
 #daq_add_python_bindings(*.cpp LINK_LIBRARIES ${PROJECT_NAME} ) # Any additional libraries to link in beyond the main library not yet determined
-daq_add_python_bindings(*.cpp LINK_LIBRARIES coredal)
+daq_add_python_bindings(*.cpp LINK_LIBRARIES coredal coredal_oks)
 
 
 ##############################################################################
