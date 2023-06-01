@@ -12,7 +12,7 @@
 
 #include "coredal/Application.hpp"
 #include "coredal/DaqApplication.hpp"
-#include "coredal/HostResource.hpp"
+#include "coredal/HostComponent.hpp"
 #include "coredal/Session.hpp"
 
 

@@ -228,11 +228,9 @@ static void fill(
     }
 #endif
 
-  for (auto & i : session.get_segments())
-    {
-      dunedaq::coredal::AddTestOnCircularDependency add_fuse_test(cd_fuse, i);
-      fill(*i, rs_or, rs_and, cd_fuse);
-    }
+  auto seg = session.get_segment();
+  dunedaq::coredal::AddTestOnCircularDependency add_fuse_test(cd_fuse, seg);
+  fill(*seg, rs_or, rs_and, cd_fuse);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -135,21 +135,10 @@ dunedaq::coredal::Component::get_parents(
   try {
     dunedaq::coredal::TestCircularDependency cd_fuse("component parents", &session);
 
-    // check session's segments
-    for (const auto& i : session.get_segments()) {
-      check_segment(parents, i, obj_impl, is_segment, cd_fuse);
-    }
-    for (const auto& app : session.get_applications()) {
-      auto res = app->cast<dunedaq::coredal::ResourceSet>();
-      if (res) {
-        AddTestOnCircularDependency add_fuse_test(cd_fuse, res);
-        std::vector<const Component *> s_list;
-        if (res->config_object().implementation() == obj_impl) {
-          parents.push_back(s_list);
-        }
-        make_parents_list(obj_impl, res, s_list, parents, cd_fuse);
-      }
-    }
+    // check session's segment
+    check_segment(parents, session.get_segment(), obj_impl, is_segment,
+                  cd_fuse);
+
 
     if (parents.empty()) {
       TLOG_DEBUG(1) <<  "cannot find segment/resource path(s) between Component " << this << " and session " << &session << " objects (check this object is linked with the session as a segment or a resource)" ;
@@ -173,19 +162,17 @@ static std::vector<const Application*> getSegmentApps(const Segment* segment) {
 
 std::vector<const Application*>
 Session::get_all_applications() const {
-  auto apps = m_applications;
-  for (auto seg : m_segments) {
-    auto segapps = getSegmentApps(seg);
-    apps.insert(apps.end(), segapps.begin(),segapps.end());
-  }
+  std::vector<const Application*> apps;
+  auto segapps = getSegmentApps(m_segment);
+  apps.insert(apps.end(), segapps.begin(),segapps.end());
   return apps;
 }
 
 // ========================================================================
 
-std::set<const HostResource*>
+std::set<const HostComponent*>
 DaqApplication::get_used_hostresources() const {
-  std::set<const HostResource*> res;
+  std::set<const HostComponent*> res;
   for (auto resource :  get_contains()) {
     auto module=resource->cast<DaqModule>();
     if (module) {

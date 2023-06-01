@@ -80,14 +80,14 @@
 
 <oks-schema>
 
-<info name="" type="" num-of-items="25" oks-format="schema" oks-version="oks-08-03-04-1-gf920aa4 built &quot;May 12 2022&quot;" created-by="jcfree" created-on="mu2edaq13.fnal.gov" creation-time="20230123T223700" last-modified-by="gjc" last-modified-on="thinkpad" last-modification-time="20230518T123659"/>
+<info name="" type="" num-of-items="31" oks-format="schema" oks-version="oks-08-03-04-1-gf920aa4 built &quot;May 12 2022&quot;" created-by="jcfree" created-on="mu2edaq13.fnal.gov" creation-time="20230123T223700" last-modified-by="gjc" last-modified-on="thinkpad" last-modification-time="20230531T163918"/>
 
  <class name="Application" description="A software executable" is-abstract="yes">
   <superclass name="ResourceBase"/>
   <attribute name="application_name" description="Name of the application binary to run." type="string" is-not-null="yes"/>
   <attribute name="commandline_parameters" description="command line parameters to add when starting the application" type="string"/>
   <relationship name="applicationEnvironment" description="Define process environment for this application." class-type="VariableBase" low-cc="zero" high-cc="many" is-composite="no" is-exclusive="no" is-dependent="no"/>
-  <relationship name="host" description="VirtualHost to run this application on" class-type="VirtualHost" low-cc="one" high-cc="one" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
+  <relationship name="runs_on" description="VirtualHost to run this application on" class-type="VirtualHost" low-cc="one" high-cc="one" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
  </class>
 
  <class name="Component" description="Abstract base class for Segment and Resource classes. It is only used to allow objects of derived classes to be put into list of disabled items. For more information read https://twiki.cern.ch/twiki/bin/viewauth/Atlas/DaqHltDal#3_4_Resource_Classes" is-abstract="yes">
@@ -106,25 +106,36 @@
   <attribute name="data_type" type="string" is-not-null="yes"/>
  </class>
 
+ <class name="ConnectionService">
+  <superclass name="Service"/>
+  <attribute name="port" type="u16" init-value="5000"/>
+  <attribute name="threads" description="Number of worker threads (not the number of workers which are processes)" type="u16" init-value="1" is-not-null="yes"/>
+  <relationship name="runs_on" class-type="PhysicalHost" low-cc="one" high-cc="one" is-composite="no" is-exclusive="no" is-dependent="no"/>
+ </class>
+
  <class name="DaqApplication">
   <superclass name="Application"/>
   <superclass name="ResourceSetAND"/>
-  <attribute name="port" description="Port for REST configuration interface" type="u16" is-not-null="yes"/>
   <attribute name="application_name" description="Name of the application binary to run." type="string" init-value="daq_application" is-not-null="yes"/>
-  <method name="get_used_hostresources" description="Get the set of all HostResources used by this application">
-   <method-implementation language="c++" prototype=" std::set&lt;const dunedaq::coredal::HostResource*&gt; get_used_hostresources() const" body=""/>
+  <method name="get_used_hostresources" description="Get the set of all HostComponents used by this application">
+   <method-implementation language="c++" prototype=" std::set&lt;const dunedaq::coredal::HostComponent*&gt; get_used_hostresources() const" body=""/>
   </method>
  </class>
 
  <class name="DaqModule" description="A plugin module for the app framework">
   <superclass name="ResourceBase"/>
-  <attribute name="plugin" description="Name of daq application plugin implementing this module" type="string" init-value="RandomListGenerator" is-not-null="yes"/>
+  <attribute name="plugin" description="Name of daq application plugin implementing this module" type="string" is-not-null="yes"/>
   <relationship name="inputs" description="List of connections to/from this module" class-type="Connection" low-cc="zero" high-cc="many" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
   <relationship name="outputs" description="Output connections from this module" class-type="Connection" low-cc="zero" high-cc="many" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
-  <relationship name="used_resources" class-type="HostResource" low-cc="zero" high-cc="many" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
+  <relationship name="used_resources" class-type="HostComponent" low-cc="zero" high-cc="many" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
  </class>
 
- <class name="HostResource" is-abstract="yes">
+ <class name="GenericService">
+  <superclass name="Service"/>
+  <attribute name="uri" type="string" is-not-null="yes"/>
+ </class>
+
+ <class name="HostComponent" is-abstract="yes">
   <attribute name="numa_id" type="u8" init-value="0" is-not-null="yes"/>
  </class>
 
@@ -137,7 +148,7 @@
  </class>
 
  <class name="NetworkDevice">
-  <superclass name="HostResource"/>
+  <superclass name="HostComponent"/>
   <relationship name="network" description="Network interfaces attached to this host" class-type="NetworkInterface" low-cc="one" high-cc="many" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
  </class>
 
@@ -149,18 +160,12 @@
   <attribute name="name" description="Name of network on this interface  Control or Data" type="enum" range="Control,Data" init-value="Control" is-not-null="yes"/>
  </class>
 
- <class name="NumaNode" description="Part of host associated with 1 NUM node">
-  <attribute name="cpu_cores" description="List of CPU cores avalable on this NUMA node. Syntax may be comma separated list or range n..m or combination of both. If using a range the step can also be given by adding :s. For example 0..63:2 will select even numbered cores from 0 to 63" type="string" init-value="0..15" is-not-null="yes"/>
-  <attribute name="resources" description="List of resources associated with this NUMA node" type="string" is-multi-value="yes"/>
-  <attribute name="description" description="Description of this NUMA node" type="string"/>
- </class>
-
- <class name="VariableBase" description="This abstract class is used to describe a single variable (name:value pair) or a set of variables." is-abstract="yes">
-  <attribute name="description" description="Describes the purpose of the parameter." type="string"/>
+ <class name="PhysicalHost">
+  <relationship name="contains" description="List of hardware components on this host" class-type="HostComponent" low-cc="one" high-cc="many" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
  </class>
 
  <class name="ProcessingResource">
-  <superclass name="HostResource"/>
+  <superclass name="HostComponent"/>
   <attribute name="cpu_cores" type="u16" is-multi-value="yes" is-not-null="yes"/>
  </class>
 
@@ -173,6 +178,16 @@
  <class name="RCApplication" description="An executable which allows users to control datataking">
   <superclass name="Application"/>
   <attribute name="timeout" description="Seconds to wait before giving up on a transition" type="u16" range="1..3600" init-value="20" is-not-null="yes"/>
+ </class>
+
+ <class name="ReadoutApplication">
+  <superclass name="DaqApplication"/>
+  <relationship name="runs_on" class-type="ReadoutHost" low-cc="one" high-cc="one" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
+  <relationship name="uses" description="Configuration of the host hardware resources used by this application" class-type="RoHwConfig" low-cc="one" high-cc="one" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
+ </class>
+
+ <class name="ReadoutHost">
+  <superclass name="VirtualHost"/>
  </class>
 
  <class name="Resource">
@@ -199,25 +214,36 @@
   <superclass name="ResourceSet"/>
  </class>
 
+ <class name="RoHwConfig">
+  <relationship name="io_device" description="Device handling input from the fron-end electronics" class-type="NetworkDevice" low-cc="zero" high-cc="one" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
+  <relationship name="snb_storage" class-type="StorageDevice" low-cc="zero" high-cc="one" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
+  <relationship name="recv_processor" class-type="ProcessingResource" low-cc="zero" high-cc="one" is-composite="yes" is-exclusive="yes" is-dependent="yes"/>
+  <relationship name="hitFindingProc" class-type="ProcessingResource" low-cc="zero" high-cc="one" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
+ </class>
+
  <class name="Segment" description="Logical sub division of the configuration that can be enabled/disabled as a group">
   <superclass name="ResourceBase"/>
   <relationship name="segments" description="Nested list of Segments that form part of this Segment" class-type="Segment" low-cc="zero" high-cc="many" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
   <relationship name="applications" description="List of Applications that run in this Segment" class-type="Application" low-cc="zero" high-cc="many" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
-  <relationship name="resources" description="List of other non-Application, non-Segment resources belonging attached to this Segment" class-type="ResourceBase" low-cc="zero" high-cc="many" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
-  <relationship name="controller" description="This Segment&apos;s run controller. If not set, Segment is controlled by controller of parent Segment/Session" class-type="RCApplication" low-cc="zero" high-cc="one" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
+  <relationship name="controller" description="This Segment&apos;s run controller. If not set, Segment is controlled by controller of parent Segment/Session" class-type="RCApplication" low-cc="one" high-cc="one" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
+  <relationship name="resources" class-type="ResourceSet" low-cc="zero" high-cc="many" is-composite="no" is-exclusive="no" is-dependent="no"/>
   <method name="get_base_segment" description="">
    <method-implementation language="c++" prototype="const Segment * get_base_segment() const" body=""/>
   </method>
+ </class>
+
+ <class name="Service">
+  <attribute name="enabled" type="bool" init-value="true" is-not-null="yes"/>
  </class>
 
  <class name="Session">
   <attribute name="description" description="A description of the session." type="string"/>
   <attribute name="use_connectivity_server" description="If set publish and lookup connection information in the connectivity server. If not all information will be provided by the configuration database." type="bool" init-value="true" is-not-null="yes"/>
   <attribute name="connectivity_service_interval_ms" description="Interval between publishes and polls of connectivity service information" type="u32" init-value="2000" is-not-null="yes"/>
-  <relationship name="applications" description="The list of applications to be started in this Session" class-type="Application" low-cc="zero" high-cc="many" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
   <relationship name="environment" description="Define process environment for any application run in given session." class-type="VariableBase" low-cc="zero" high-cc="many" is-composite="no" is-exclusive="no" is-dependent="no"/>
   <relationship name="disabled" description="Resources that should not participate in the current run" class-type="Component" low-cc="zero" high-cc="many" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
-  <relationship name="segments" description="List of configuration Segments that form this Session" class-type="Segment" low-cc="zero" high-cc="many" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
+  <relationship name="segment" description="List of configuration Segments that form this Session" class-type="Segment" low-cc="one" high-cc="one" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
+  <relationship name="services" class-type="Service" low-cc="zero" high-cc="many" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
   <method name="get_all_applications" description="Returns applications defined in the Session and all of its Segments.">
    <method-implementation language="c++" prototype="std::vector&lt;const dunedaq::coredal::Application *&gt; get_all_applications() const" body=""/>
   </method>
@@ -230,7 +256,7 @@
  </class>
 
  <class name="StorageDevice">
-  <superclass name="HostResource"/>
+  <superclass name="HostComponent"/>
   <attribute name="storage" description="Amount of disk storage available for output data on this host in GB" type="u32" init-value="0" is-not-null="yes"/>
  </class>
 
@@ -240,14 +266,18 @@
   <attribute name="value" description="Value of the variable." type="string"/>
  </class>
 
+ <class name="VariableBase" description="This abstract class is used to describe a single variable (name:value pair) or a set of variables." is-abstract="yes">
+  <attribute name="description" description="Describes the purpose of the parameter." type="string"/>
+ </class>
+
  <class name="VariableSet" description="Set of variables or variable sets. Names and values of all nested variables are added to value of relationship using resource set.">
   <superclass name="VariableBase"/>
   <relationship name="contains" description="List of included variables or variable sets." class-type="VariableBase" low-cc="one" high-cc="many" is-composite="no" is-exclusive="no" is-dependent="no"/>
  </class>
 
  <class name="VirtualHost">
-  <attribute name="physical_host_name" type="string" is-not-null="yes"/>
-  <relationship name="hw_resources" description="Hardware resources required by this virtual host" class-type="HostResource" low-cc="zero" high-cc="many" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
+  <relationship name="uses" description="Hardware resources required by this virtual host" class-type="HostComponent" low-cc="one" high-cc="many" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
+  <relationship name="runs_on" description="The physical host that this virtual host runs on" class-type="PhysicalHost" low-cc="one" high-cc="one" is-composite="yes" is-exclusive="no" is-dependent="yes"/>
  </class>
 
 </oks-schema>

@@ -10,7 +10,7 @@
 #include "pybind11/stl.h"
 
 #include "coredal/DaqApplication.hpp"
-#include "coredal/HostResource.hpp"
+#include "coredal/HostComponent.hpp"
 
 namespace py = pybind11;
 
@@ -27,7 +27,7 @@ PYBIND11_MODULE(_daq_coredal_py, m)
   py::class_<dunedaq::coredal::DaqApplication>(m,"DaqApplication")
     .def(py::init<oksdbinterfaces::Configuration& , const oksdbinterfaces::ConfigObject&>())
     .def("get_used_hostresources", &dunedaq::coredal::DaqApplication::get_used_hostresources);
-  py::class_<dunedaq::coredal::HostResource>(m,"HostResource");
+  py::class_<dunedaq::coredal::HostComponent>(m,"HostComponent");
 #endif
   register_dal_methods(m);
 }
