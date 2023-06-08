@@ -47,3 +47,9 @@ comparing with those listed in its `hw_resources` relationship.
   Contains a `uri` attribute for compatability with existing `moo`
   schema. Hope that `protocol` and `port` can be used to construct a
   uri with an address derived from the `Host`'s `NetworkInterface`s.
+
+  Network ports with k8s defined in separate OKS objects for each
+connection within app but can be the same for all apps.  Network ports
+without k8s can be specified as 0 in a single OKS object used by all
+connections and connection service will be used to find which ports
+were allocated.

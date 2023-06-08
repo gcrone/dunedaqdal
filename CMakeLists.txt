@@ -38,6 +38,8 @@ daq_add_application(listApps list_apps.cxx
 
 daq_add_application(disable_test disable_test.cxx TEST
   LINK_LIBRARIES coredal oksdbinterfaces::oksdbinterfaces logging::logging)
+daq_add_application(copyAppDal copyAppDal.cxx TEST
+  LINK_LIBRARIES coredal oksdbinterfaces::oksdbinterfaces logging::logging)
 ##############################################################################
 
 
