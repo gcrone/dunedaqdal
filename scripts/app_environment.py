@@ -15,26 +15,23 @@ def process_variables(variables, envDict):
         envDict[item.name] = item.value
  
 # Recursively process all Segments in given Segment extracting Applications
-def process_segment(db, session, segment, controller=None):
-  if segment.controller:
-    controller = segment.controller
-  if controller:
-    controller_id = controller.id
-  else:
-    controller_id = 'root-controller'
+def process_segment(db, session, segment):
+  controller = segment.controller.id
+
+  # Get default environment from Session
+  defenv = {}
+  process_variables(session.environment, defenv)
 
   # Recurse over nested segments
   for seg in segment.segments:
-    process_segment(seg, controller)
+    process_segment(db, session, seg)
 
   # Get all the enabled applications of this segment
   for app in segment.applications:
     print()
     if not coredal.component_disabled(db._obj, session.id, app.id):
-      print(f"Controller: {controller_id}, App: {app}")
-      appenv = {}
-      # Get default environment from Session
-      process_variables(session.environment, appenv)
+      print(f"Controller: {controller}, App: {app}")
+      appenv = defenv
       # Override with any app specific environment from Application
       process_variables(app.applicationEnvironment, appenv)
       print(f"Application environment={appenv}")
